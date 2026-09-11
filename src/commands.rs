@@ -99,28 +99,34 @@ pub fn week() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let entries = storage::load()?;
-
-    let query = query.to_lowercase();
-
+fn print_entries(entries: &Vec<Entry>) {
     let mut current_day: Option<NaiveDate> = None;
 
     for entry in entries {
         let entry_day = entry.timestamp.date_naive();
-        let matches = entry.message.to_lowercase().contains(&query);
-
-        if !matches {
-            continue;
-        }
-
         if current_day != Some(entry_day) {
-            if matches {
-                println!("\n{}\n----------", entry_day.format("%d/%m/%Y"));
-                current_day = Some(entry_day);
-            }
+            println!("\n{}\n----------", entry_day.format("%d/%m/%Y"));
+            current_day = Some(entry_day);
         }
         println!("{} - {}", entry.formatted_time(), entry.message)
     }
+}
+pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut entries = storage::load()?;
+    entries.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+
+    let lower_query = query.to_lowercase();
+
+    let filtered_entries: Vec<Entry> = entries
+        .into_iter()
+        .filter(|entry| entry.message.to_lowercase().contains(&lower_query))
+        .collect();
+
+    if filtered_entries.is_empty() {
+        println!("No activities found for {}", query);
+    }
+
+    print_entries(&filtered_entries);
+
     Ok(())
 }

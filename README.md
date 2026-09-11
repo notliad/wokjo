@@ -9,7 +9,7 @@ A minimal CLI journal
 ```bash
 git clone https://github.com/notliad/wokjo.git
 cd wokjo
-cargo install --path
+cargo install --path .
 ```
 
 ### Direct Install
