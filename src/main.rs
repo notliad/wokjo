@@ -37,6 +37,15 @@ enum Commands {
     Search {
         query: String,
     },
+    // Delete an entry
+    Delete {
+        id: String,
+    },
+    // Edit an entry
+    Edit {
+        id: String,
+        message: String,
+    },
 }
 
 fn parse_date(value: &str) -> Result<NaiveDate, String> {
@@ -54,6 +63,8 @@ fn main() {
         Commands::List => commands::list(),
         Commands::Week => commands::week(),
         Commands::Search { query } => commands::search(&query),
+        Commands::Delete { id } => commands::delete(&id),
+        Commands::Edit { id, message } => commands::edit(&id, &message),
     };
 
     if let Err(error) = result {

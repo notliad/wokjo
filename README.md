@@ -25,6 +25,8 @@ wokjo <COMMAND>
 
 Commands:
   add       # Log a new work activity
+  edit      # Edit an entry
+  delete    # Delete an entry
   today     # Show today's activities
   yesterday # Show yesterday's activities
   day       # Show activities from that day

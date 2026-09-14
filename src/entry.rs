@@ -1,10 +1,16 @@
 use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize)]
 pub struct Entry {
+    pub id: String,
     pub timestamp: DateTime<Local>,
     pub message: String,
+}
+
+fn generate_id() -> String {
+    Uuid::new_v4().to_string()[..6].to_string()
 }
 
 impl Entry {
@@ -14,6 +20,7 @@ impl Entry {
         }
 
         Ok(Entry {
+            id: generate_id(),
             timestamp: Local::now(),
             message: message.to_string(),
         })

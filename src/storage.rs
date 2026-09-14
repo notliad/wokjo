@@ -43,3 +43,21 @@ pub fn load() -> Result<Vec<Entry>, Box<dyn Error>> {
 
     Ok(entries)
 }
+
+pub fn save_all(entries: &[Entry]) -> Result<(), Box<dyn Error>> {
+    let path = data_file_path()?;
+
+    let mut file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(path)?;
+
+    for entry in entries {
+        let json = serde_json::to_string(entry)?;
+
+        writeln!(file, "{}", json)?;
+    }
+
+    Ok(())
+}

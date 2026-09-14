@@ -14,20 +14,17 @@ pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
 
 fn show_entries_for_date(date: NaiveDate) -> Result<(), Box<dyn std::error::Error>> {
     let entries = storage::load()?;
-    let mut found = false;
 
-    println!("{}\n----------", date.format("%d/%m/%Y"));
+    let filtered_entries: Vec<Entry> = entries
+        .into_iter()
+        .filter(|entry| entry.timestamp.date_naive() == date)
+        .collect();
 
-    for entry in entries {
-        if entry.timestamp.date_naive() == date {
-            println!("{} {}", entry.formatted_time(), entry.message);
-            found = true;
-        }
-    }
-
-    if !found {
+    if filtered_entries.is_empty() {
         println!("No activity logged.");
     }
+
+    print_entries(&filtered_entries);
 
     Ok(())
 }
@@ -57,16 +54,7 @@ pub fn list() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    let mut current_day: Option<NaiveDate> = None;
-
-    for entry in entries {
-        let entry_day = entry.timestamp.date_naive();
-        if current_day != Some(entry_day) {
-            println!("\n{}\n----------", entry_day.format("%d/%m/%Y"));
-            current_day = Some(entry_day);
-        }
-        println!("{} - {}", entry.formatted_time(), entry.message)
-    }
+    print_entries(&entries);
 
     Ok(())
 }
@@ -86,6 +74,7 @@ pub fn week() -> Result<(), Box<dyn std::error::Error>> {
         let entry_day = entry.timestamp.date_naive();
 
         if entry_day < monday || entry_day > today {
+            println!("No activity logged this week!");
             continue;
         }
 
@@ -93,7 +82,12 @@ pub fn week() -> Result<(), Box<dyn std::error::Error>> {
             println!("\n{}\n----------", entry_day.format("%d/%m/%Y"));
             current_day = Some(entry_day);
         }
-        println!("{} - {}", entry.formatted_time(), entry.message)
+        println!(
+            "{} {} - {}",
+            entry.id,
+            entry.formatted_time(),
+            entry.message
+        )
     }
 
     Ok(())
@@ -108,9 +102,15 @@ fn print_entries(entries: &Vec<Entry>) {
             println!("\n{}\n----------", entry_day.format("%d/%m/%Y"));
             current_day = Some(entry_day);
         }
-        println!("{} - {}", entry.formatted_time(), entry.message)
+        println!(
+            "{} {} - {}",
+            entry.id,
+            entry.formatted_time(),
+            entry.message
+        )
     }
 }
+
 pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries = storage::load()?;
     entries.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
@@ -129,4 +129,35 @@ pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
     print_entries(&filtered_entries);
 
     Ok(())
+}
+
+pub fn delete(id: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let entries = storage::load()?;
+    let original_len = entries.len();
+
+    let filtered_entries: Vec<Entry> = entries.into_iter().filter(|entry| entry.id != id).collect();
+
+    if original_len == filtered_entries.len() {
+        return Err(format!("No entry found with ID \"{}\".", id).into());
+    }
+
+    storage::save_all(&filtered_entries)?;
+    println!("Log deleted!");
+
+    Ok(())
+}
+
+pub fn edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut entries = storage::load()?;
+    let entry = entries.iter_mut().find(|entry| entry.id == id);
+    match entry {
+        Some(entry) => {
+            entry.message = message.to_string();
+            println!("Log edited!");
+        }
+        None => {
+            return Err(format!("No entry found with ID \"{}\".", id).into());
+        }
+    }
+    storage::save_all(&entries)
 }
