@@ -32,6 +32,14 @@ Commands:
   day       # Show activities from that day
   list      # List all logged activities
   week      # Show activities from the current week
+  task
+    add     # Add a new task
+    check   # Check/uncheck a task
+    todo    # Lists all unchecked tasks
+    list    # List all tasks
+    edit    # Edit a task
+    delete  # Delete a task
+
   help      # Print this message or the help of the given subcommand(s)
 
 Options:

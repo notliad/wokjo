@@ -60,6 +60,7 @@ enum TaskCommands {
     Check { id: String },
     Edit { id: String, message: String },
     Delete { id: String },
+    Todo,
 }
 
 fn parse_date(value: &str) -> Result<NaiveDate, String> {
@@ -85,6 +86,7 @@ fn main() {
             TaskCommands::Check { id } => commands::task_check(&id),
             TaskCommands::Edit { id, message } => commands::task_edit(&id, &message),
             TaskCommands::Delete { id } => commands::task_delete(&id),
+            TaskCommands::Todo => commands::task_todo(),
         },
     };
 

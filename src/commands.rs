@@ -1,24 +1,26 @@
-use crate::entry::Entry;
 use crate::storage;
 use crate::task::Task;
+use crate::{commands, entry::Entry};
 use chrono::{Datelike, Duration, Local, NaiveDate};
 
 pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let today = Local::now().date_naive();
     let entry = Entry::new(message)?;
-
     storage::save(&entry, "entries")?;
 
     println!("Entry added!");
+
+    show_entries_for_date(today)?;
 
     Ok(())
 }
 
 pub fn task_add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let task = Task::new(message)?;
-
     storage::save(&task, "tasks")?;
 
-    println!("Task added!");
+    println!("Task added!\n");
+    task_todo()?;
 
     Ok(())
 }
@@ -86,6 +88,7 @@ pub fn task_list() -> Result<(), Box<dyn std::error::Error>> {
 pub fn task_check(id: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut tasks = storage::load_task()?;
     let task = tasks.iter_mut().find(|task| task.id == id);
+
     match task {
         Some(task) => {
             task.done = !task.done;
@@ -99,6 +102,7 @@ pub fn task_check(id: &str) -> Result<(), Box<dyn std::error::Error>> {
             return Err(format!("No task found with ID \"{}\".", id).into());
         }
     }
+
     storage::save_all(&tasks, "tasks")
 }
 
@@ -200,6 +204,7 @@ pub fn delete(id: &str) -> Result<(), Box<dyn std::error::Error>> {
 pub fn edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries = storage::load()?;
     let entry = entries.iter_mut().find(|entry| entry.id == id);
+
     match entry {
         Some(entry) => {
             entry.message = message.to_string();
@@ -209,6 +214,7 @@ pub fn edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
             return Err(format!("No entry found with ID \"{}\".", id).into());
         }
     }
+
     storage::save_all(&entries, "entries")
 }
 
@@ -231,6 +237,7 @@ pub fn task_delete(id: &str) -> Result<(), Box<dyn std::error::Error>> {
 pub fn task_edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut tasks = storage::load_task()?;
     let task = tasks.iter_mut().find(|task| task.id == id);
+
     match task {
         Some(task) => {
             task.message = message.to_string();
@@ -240,5 +247,18 @@ pub fn task_edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Erro
             return Err(format!("No task found with ID \"{}\".", id).into());
         }
     }
+
     storage::save_all(&tasks, "tasks")
+}
+
+pub fn task_todo() -> Result<(), Box<dyn std::error::Error>> {
+    let tasks = storage::load_task()?;
+    let filtered_tasks: Vec<Task> = tasks.into_iter().filter(|task| !task.done).collect();
+
+    if filtered_tasks.is_empty() {
+        println!("No pending tasks")
+    }
+    print_tasks(&filtered_tasks);
+
+    Ok(())
 }
