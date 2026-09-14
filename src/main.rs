@@ -1,6 +1,7 @@
 mod commands;
 mod entry;
 mod storage;
+mod task;
 
 use chrono::NaiveDate;
 use clap::{Parser, Subcommand};
@@ -46,6 +47,19 @@ enum Commands {
         id: String,
         message: String,
     },
+    Task {
+        #[command(subcommand)]
+        command: TaskCommands,
+    },
+}
+
+#[derive(Subcommand)]
+enum TaskCommands {
+    Add { message: String },
+    List,
+    Check { id: String },
+    Edit { id: String, message: String },
+    Delete { id: String },
 }
 
 fn parse_date(value: &str) -> Result<NaiveDate, String> {
@@ -65,6 +79,13 @@ fn main() {
         Commands::Search { query } => commands::search(&query),
         Commands::Delete { id } => commands::delete(&id),
         Commands::Edit { id, message } => commands::edit(&id, &message),
+        Commands::Task { command } => match command {
+            TaskCommands::Add { message } => commands::task_add(&message),
+            TaskCommands::List => commands::task_list(),
+            TaskCommands::Check { id } => commands::task_check(&id),
+            TaskCommands::Edit { id, message } => commands::task_edit(&id, &message),
+            TaskCommands::Delete { id } => commands::task_delete(&id),
+        },
     };
 
     if let Err(error) = result {

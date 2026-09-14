@@ -1,13 +1,24 @@
 use crate::entry::Entry;
 use crate::storage;
+use crate::task::Task;
 use chrono::{Datelike, Duration, Local, NaiveDate};
 
 pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let entry = Entry::new(message)?;
 
-    storage::save(&entry)?;
+    storage::save(&entry, "entries")?;
 
     println!("Entry added!");
+
+    Ok(())
+}
+
+pub fn task_add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let task = Task::new(message)?;
+
+    storage::save(&task, "tasks")?;
+
+    println!("Task added!");
 
     Ok(())
 }
@@ -57,6 +68,38 @@ pub fn list() -> Result<(), Box<dyn std::error::Error>> {
     print_entries(&entries);
 
     Ok(())
+}
+
+pub fn task_list() -> Result<(), Box<dyn std::error::Error>> {
+    let tasks = storage::load_task()?;
+
+    if tasks.is_empty() {
+        println!("No tasks logged.");
+        return Ok(());
+    }
+
+    print_tasks(&tasks);
+
+    Ok(())
+}
+
+pub fn task_check(id: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut tasks = storage::load_task()?;
+    let task = tasks.iter_mut().find(|task| task.id == id);
+    match task {
+        Some(task) => {
+            task.done = !task.done;
+            if task.done {
+                println!("Task checked!");
+            } else {
+                println!("Task unchecked!");
+            }
+        }
+        None => {
+            return Err(format!("No task found with ID \"{}\".", id).into());
+        }
+    }
+    storage::save_all(&tasks, "tasks")
 }
 
 pub fn week() -> Result<(), Box<dyn std::error::Error>> {
@@ -111,6 +154,13 @@ fn print_entries(entries: &Vec<Entry>) {
     }
 }
 
+fn print_tasks(tasks: &Vec<Task>) {
+    for task in tasks {
+        let status = if task.done { "[x]" } else { "[ ] " };
+        println!("{} {} - {}", status, task.id, task.message);
+    }
+}
+
 pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries = storage::load()?;
     entries.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
@@ -141,7 +191,7 @@ pub fn delete(id: &str) -> Result<(), Box<dyn std::error::Error>> {
         return Err(format!("No entry found with ID \"{}\".", id).into());
     }
 
-    storage::save_all(&filtered_entries)?;
+    storage::save_all(&filtered_entries, "entries")?;
     println!("Log deleted!");
 
     Ok(())
@@ -159,5 +209,36 @@ pub fn edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
             return Err(format!("No entry found with ID \"{}\".", id).into());
         }
     }
-    storage::save_all(&entries)
+    storage::save_all(&entries, "entries")
+}
+
+pub fn task_delete(id: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let tasks = storage::load_task()?;
+    let original_len = tasks.len();
+
+    let filtered_tasks: Vec<Task> = tasks.into_iter().filter(|task| task.id != id).collect();
+
+    if original_len == filtered_tasks.len() {
+        return Err(format!("No task found with ID \"{}\".", id).into());
+    }
+
+    storage::save_all(&filtered_tasks, "tasks")?;
+    println!("Task deleted!");
+
+    Ok(())
+}
+
+pub fn task_edit(id: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut tasks = storage::load_task()?;
+    let task = tasks.iter_mut().find(|task| task.id == id);
+    match task {
+        Some(task) => {
+            task.message = message.to_string();
+            println!("Task edited!");
+        }
+        None => {
+            return Err(format!("No task found with ID \"{}\".", id).into());
+        }
+    }
+    storage::save_all(&tasks, "tasks")
 }
