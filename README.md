@@ -1,6 +1,6 @@
 # wokjo
 
-A CLI minimalist journal
+A CLI minimalist work journal
 
 ## Installation
 
