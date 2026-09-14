@@ -1,6 +1,6 @@
+use crate::entry::Entry;
 use crate::storage;
 use crate::task::Task;
-use crate::{commands, entry::Entry};
 use chrono::{Datelike, Duration, Local, NaiveDate};
 
 pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
