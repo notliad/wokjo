@@ -39,6 +39,9 @@ Commands:
     list    # List all tasks
     edit    # Edit a task
     delete  # Delete a task
+  export
+    entries # Export all your activities to a md file
+    tasks   # Export all your tasks to a md file
 
   help      # Print this message or the help of the given subcommand(s)
 

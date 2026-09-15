@@ -34,23 +34,18 @@ enum Commands {
     List,
     /// Show activities from the current week
     Week,
-    // Search for a activity
-    Search {
-        query: String,
-    },
-    // Delete an entry
-    Delete {
-        id: String,
-    },
-    // Edit an entry
-    Edit {
-        id: String,
-        message: String,
-    },
+    /// Search for a activity
+    Search { query: String },
+    /// Delete an entry
+    Delete { id: String },
+    /// Edit an entry
+    Edit { id: String, message: String },
+    /// Run wokjo task -h for more details
     Task {
         #[command(subcommand)]
         command: TaskCommands,
     },
+    /// Run wokjo export -h for more details
     Export {
         #[command(subcommand)]
         command: ExportCommands,
@@ -59,20 +54,28 @@ enum Commands {
 
 #[derive(Subcommand)]
 enum TaskCommands {
+    /// Add a task
     Add { message: String },
+    /// List all tasks
     List,
+    /// Check/uncheck a task
     Check { id: String },
+    /// Edit a task
     Edit { id: String, message: String },
+    /// Delete a task
     Delete { id: String },
+    /// List all pending tasks
     Todo,
 }
 
 #[derive(Subcommand)]
 enum ExportCommands {
+    /// Export your activities to a md file
     Entries {
         #[arg(short, long)]
         output: Option<String>,
     },
+    /// Export your tasks to a md file
     Tasks {
         #[arg(short, long)]
         output: Option<String>,
