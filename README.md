@@ -1,6 +1,22 @@
 # wokjo
 
-A CLI minimalist work journal
+A minimal CLI work journal, designed to not be in your way.
+No GUI, no clicks.
+
+```bash
+wokjo add "bug 123 fixed"
+```
+
+We have tasks too if you want.
+```bash
+wokjo task add "fix bug 123"
+```
+then
+
+```bash
+wokjo task check <task-id>
+```
+and done.
 
 ## Installation
 
