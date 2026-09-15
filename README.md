@@ -52,8 +52,8 @@ Options:
 
 ## Where it saves?
 
-wokjo saves a single file in `ProjectDirs` default folder
+wokjo saves a couple files in `ProjectDirs` default folder
 
-- Linux: `~/.local/share/wokjo/entries.jsonl`
-- Windows: `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl`
-- macOS: `/Users/<username>/Library/Application Support/wokjo/entries.jsonl`
+- Linux: `~/.local/share/wokjo/entries.jsonl` and `~/.local/share/wokjo/tasks.jsonl`
+- Windows: `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl` and `C:\Users\<username>\AppData\Roaming\wokjo\data\tasks.jsonl`
+- macOS: `/Users/<username>/Library/Application Support/wokjo/entries.jsonl` and `/Users/<username>/Library/Application Support/wokjo/tasks.jsonl`
