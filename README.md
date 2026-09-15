@@ -54,6 +54,12 @@ Options:
 
 wokjo saves a couple files in `ProjectDirs` default folder
 
-- Linux: `~/.local/share/wokjo/entries.jsonl` and `~/.local/share/wokjo/tasks.jsonl`
-- Windows: `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl` and `C:\Users\<username>\AppData\Roaming\wokjo\data\tasks.jsonl`
-- macOS: `/Users/<username>/Library/Application Support/wokjo/entries.jsonl` and `/Users/<username>/Library/Application Support/wokjo/tasks.jsonl`
+- Linux: 
+  - `~/.local/share/wokjo/entries.jsonl`
+  - `~/.local/share/wokjo/tasks.jsonl`
+- Windows: 
+  - `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl`
+  - `C:\Users\<username>\AppData\Roaming\wokjo\data\tasks.jsonl`
+- macOS: 
+  - `/Users/<username>/Library/Application Support/wokjo/entries.jsonl`
+  - `/Users/<username>/Library/Application Support/wokjo/tasks.jsonl`
