@@ -51,6 +51,10 @@ enum Commands {
         #[command(subcommand)]
         command: TaskCommands,
     },
+    Export {
+        #[command(subcommand)]
+        command: ExportCommands,
+    },
 }
 
 #[derive(Subcommand)]
@@ -61,6 +65,18 @@ enum TaskCommands {
     Edit { id: String, message: String },
     Delete { id: String },
     Todo,
+}
+
+#[derive(Subcommand)]
+enum ExportCommands {
+    Entries {
+        #[arg(short, long)]
+        output: Option<String>,
+    },
+    Tasks {
+        #[arg(short, long)]
+        output: Option<String>,
+    },
 }
 
 fn parse_date(value: &str) -> Result<NaiveDate, String> {
@@ -87,6 +103,10 @@ fn main() {
             TaskCommands::Edit { id, message } => commands::task_edit(&id, &message),
             TaskCommands::Delete { id } => commands::task_delete(&id),
             TaskCommands::Todo => commands::task_todo(),
+        },
+        Commands::Export { command } => match command {
+            ExportCommands::Entries { output } => commands::export_entries(output.as_deref()),
+            ExportCommands::Tasks { output } => commands::export_tasks(output.as_deref()),
         },
     };
 

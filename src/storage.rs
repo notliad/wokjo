@@ -7,7 +7,7 @@ use std::fs::{OpenOptions, create_dir_all, read_to_string};
 use std::io::Write;
 use std::path::PathBuf;
 
-fn data_file_path(filename: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
+pub fn data_file_path(filename: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
     let project_dirs =
         ProjectDirs::from("", "", "wokjo").ok_or("We couldn't find the system data directory")?;
 
@@ -50,7 +50,9 @@ pub fn load() -> Result<Vec<Entry>, Box<dyn Error>> {
 pub fn load_task() -> Result<Vec<Task>, Box<dyn Error>> {
     let path = data_file_path("tasks.jsonl")?;
 
-    if !path.exists() {}
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
 
     let content = read_to_string(path)?;
 

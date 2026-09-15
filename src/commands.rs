@@ -2,6 +2,7 @@ use crate::entry::Entry;
 use crate::storage;
 use crate::task::Task;
 use chrono::{Datelike, Duration, Local, NaiveDate};
+use std::fmt::Write;
 
 pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
     let today = Local::now().date_naive();
@@ -259,6 +260,64 @@ pub fn task_todo() -> Result<(), Box<dyn std::error::Error>> {
         println!("No pending tasks")
     }
     print_tasks(&filtered_tasks);
+
+    Ok(())
+}
+
+fn entries_to_markdown(entries: &[Entry]) -> String {
+    let mut markdown = String::from("# Work Log\n");
+    let mut current_day: Option<NaiveDate> = None;
+
+    for entry in entries {
+        let entry_day = entry.timestamp.date_naive();
+        if current_day != Some(entry_day) {
+            writeln!(markdown, "\n## {}", entry_day.format("%d/%m/%Y")).unwrap();
+            current_day = Some(entry_day);
+        }
+        writeln!(
+            markdown,
+            "- `{}`  {}",
+            entry.formatted_time(),
+            entry.message
+        )
+        .unwrap();
+    }
+
+    markdown
+}
+
+fn tasks_to_markdown(tasks: &[Task]) -> String {
+    let mut markdown = String::from("# Work Tasks\n\n");
+
+    for task in tasks {
+        let status = if task.done { "[x]" } else { "[ ]" };
+        writeln!(markdown, "- {} {}", status, task.message).unwrap();
+    }
+
+    markdown
+}
+
+pub fn export_entries(output: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+    let mut entries = storage::load()?;
+    entries.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
+    let output = output.unwrap_or("wokjo-entries.md");
+
+    let entries_markdowned = entries_to_markdown(&entries);
+
+    std::fs::write(output, entries_markdowned)?;
+    println!("Exported to {}", output);
+
+    Ok(())
+}
+
+pub fn export_tasks(output: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
+    let tasks = storage::load_task()?;
+    let output = output.unwrap_or("wokjo-tasks.md");
+
+    let tasks_markdowned = tasks_to_markdown(&tasks);
+
+    std::fs::write(output, tasks_markdowned)?;
+    println!("Exported to {}", output);
 
     Ok(())
 }
