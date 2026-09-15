@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "wokjo")]
-#[command(about = "Log your work activities")]
+#[command(about = "Log your work activities", version)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
