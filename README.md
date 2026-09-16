@@ -1,6 +1,22 @@
 # wokjo
 
-A CLI minimalist work journal
+A minimal CLI work journal, designed to not be in your way.
+No GUI, no clicks.
+
+```bash
+wokjo add "bug 123 fixed"
+```
+
+We have tasks too if you want.
+```bash
+wokjo task add "fix bug 123"
+```
+then
+
+```bash
+wokjo task check <task-id>
+```
+and done.
 
 ## Installation
 
@@ -46,13 +62,20 @@ Commands:
   help      # Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help # Print help
+  -h, --help    # Print help
+  -V, --version # Print version
 ```
 
 ## Where it saves?
 
-wokjo saves a single file in `ProjectDirs` default folder
+wokjo saves a couple files in `ProjectDirs` default folder
 
-- Linux: `~/.local/share/wokjo/entries.jsonl`
-- Windows: `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl`
-- macOS: `/Users/<username>/Library/Application Support/wokjo/entries.jsonl`
+- Linux: 
+  - `~/.local/share/wokjo/entries.jsonl`
+  - `~/.local/share/wokjo/tasks.jsonl`
+- Windows: 
+  - `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl`
+  - `C:\Users\<username>\AppData\Roaming\wokjo\data\tasks.jsonl`
+- macOS: 
+  - `/Users/<username>/Library/Application Support/wokjo/entries.jsonl`
+  - `/Users/<username>/Library/Application Support/wokjo/tasks.jsonl`
