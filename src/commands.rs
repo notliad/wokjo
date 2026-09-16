@@ -4,9 +4,9 @@ use crate::task::Task;
 use chrono::{Datelike, Duration, Local, NaiveDate};
 use std::fmt::Write;
 
-pub fn add(message: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn add(message: &str, tags: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
     let today = Local::now().date_naive();
-    let entry = Entry::new(message)?;
+    let entry = Entry::new(message, tags)?;
     storage::save(&entry, "entries")?;
 
     println!("Entry added!");
@@ -151,9 +151,10 @@ fn print_entries(entries: &Vec<Entry>) {
             current_day = Some(entry_day);
         }
         println!(
-            "{} {} - {}",
+            "{} {} - {} {}",
             entry.id,
             entry.formatted_time(),
+            entry.formatted_tags(),
             entry.message
         )
     }
@@ -166,19 +167,35 @@ fn print_tasks(tasks: &Vec<Task>) {
     }
 }
 
-pub fn search(query: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn search(query: Option<&str>, tag: Option<&str>) -> Result<(), Box<dyn std::error::Error>> {
     let mut entries = storage::load()?;
     entries.sort_by(|a, b| b.timestamp.cmp(&a.timestamp));
 
-    let lower_query = query.to_lowercase();
+    let lower_query = query.map(|query| query.to_lowercase());
 
     let filtered_entries: Vec<Entry> = entries
         .into_iter()
-        .filter(|entry| entry.message.to_lowercase().contains(&lower_query))
+        .filter(|entry| {
+            let matches_query = match &lower_query {
+                Some(query) => entry.message.to_lowercase().contains(query),
+                None => true,
+            };
+
+            let matches_tag = match tag {
+                Some(tag) => entry
+                    .tags
+                    .iter()
+                    .any(|entry_tag| entry_tag.eq_ignore_ascii_case(tag)),
+                None => true,
+            };
+
+            matches_query && matches_tag
+        })
         .collect();
 
     if filtered_entries.is_empty() {
-        println!("No activities found for {}", query);
+        println!("No activities found.");
+        return Ok(());
     }
 
     print_entries(&filtered_entries);

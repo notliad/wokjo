@@ -20,6 +20,9 @@ enum Commands {
     Add {
         /// Description of what you worked on
         message: String,
+
+        #[arg(short, long)]
+        tag: Vec<String>,
     },
     /// Show today's activities
     Today,
@@ -35,7 +38,12 @@ enum Commands {
     /// Show activities from the current week
     Week,
     /// Search for a activity
-    Search { query: String },
+    Search {
+        query: Option<String>,
+
+        #[arg(short, long)]
+        tag: Option<String>,
+    },
     /// Delete an entry
     Delete { id: String },
     /// Edit an entry
@@ -90,13 +98,13 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
-        Commands::Add { message } => commands::add(&message),
+        Commands::Add { message, tag } => commands::add(&message, tag),
         Commands::Today => commands::today(),
         Commands::Yesterday => commands::yesterday(),
         Commands::Day { date } => commands::day(date),
         Commands::List => commands::list(),
         Commands::Week => commands::week(),
-        Commands::Search { query } => commands::search(&query),
+        Commands::Search { query, tag } => commands::search(query.as_deref(), tag.as_deref()),
         Commands::Delete { id } => commands::delete(&id),
         Commands::Edit { id, message } => commands::edit(&id, &message),
         Commands::Task { command } => match command {

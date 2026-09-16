@@ -7,6 +7,9 @@ pub struct Entry {
     pub id: String,
     pub timestamp: DateTime<Local>,
     pub message: String,
+
+    #[serde(default)]
+    pub tags: Vec<String>,
 }
 
 fn generate_id() -> String {
@@ -14,7 +17,15 @@ fn generate_id() -> String {
 }
 
 impl Entry {
-    pub fn new(message: &str) -> Result<Entry, &'static str> {
+    pub fn formatted_tags(&self) -> String {
+        self.tags
+            .iter()
+            .map(|tag| format!("[{}]", tag))
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+
+    pub fn new(message: &str, tags: Vec<String>) -> Result<Entry, &'static str> {
         if message.trim().is_empty() {
             return Err("Message cannot be empty");
         }
@@ -23,6 +34,7 @@ impl Entry {
             id: generate_id(),
             timestamp: Local::now(),
             message: message.to_string(),
+            tags,
         })
     }
 
