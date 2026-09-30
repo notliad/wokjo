@@ -9,7 +9,11 @@ use std::num::NonZeroUsize;
 
 #[derive(Parser)]
 #[command(name = "wokjo")]
-#[command(about = "Log your work activities", version)]
+#[command(
+    about = "Log your work activities",
+    version,
+    after_help = "Run 'wokjo <command> --help' for command options."
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
