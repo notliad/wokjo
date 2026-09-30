@@ -8,14 +8,17 @@ wokjo add "bug 123 fixed"
 ```
 
 We have tasks too if you want.
+
 ```bash
 wokjo task add "fix bug 123"
 ```
+
 then
 
 ```bash
 wokjo task check <task-id>
 ```
+
 and done.
 
 ## Installation
@@ -47,8 +50,9 @@ Commands:
   yesterday # Show yesterday's activities
   day       # Show activities from that day
   list      # List all logged activities
-  week      # Show activities from the current week
-  task
+week      # Show activities from the current week
+tags      # List tags and their entry counts
+task
     add     # Add a new task
     check   # Check/uncheck a task
     todo    # Lists all unchecked tasks
@@ -70,12 +74,12 @@ Options:
 
 wokjo saves a couple files in `ProjectDirs` default folder
 
-- Linux: 
+- Linux:
   - `~/.local/share/wokjo/entries.jsonl`
   - `~/.local/share/wokjo/tasks.jsonl`
-- Windows: 
+- Windows:
   - `C:\Users\<username>\AppData\Roaming\wokjo\data\entries.jsonl`
   - `C:\Users\<username>\AppData\Roaming\wokjo\data\tasks.jsonl`
-- macOS: 
+- macOS:
   - `/Users/<username>/Library/Application Support/wokjo/entries.jsonl`
   - `/Users/<username>/Library/Application Support/wokjo/tasks.jsonl`

@@ -5,6 +5,7 @@ mod task;
 
 use chrono::NaiveDate;
 use clap::{Parser, Subcommand};
+use std::num::NonZeroUsize;
 
 #[derive(Parser)]
 #[command(name = "wokjo")]
@@ -21,6 +22,10 @@ enum Commands {
         /// Description of what you worked on
         message: String,
 
+        /// Date of the activity in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        date: Option<NaiveDate>,
+
         #[arg(short, long)]
         tag: Vec<String>,
     },
@@ -34,9 +39,26 @@ enum Commands {
         date: NaiveDate,
     },
     /// List all logged activities
-    List,
+    List {
+        /// First date to include in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        from: Option<NaiveDate>,
+
+        /// Last date to include in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        to: Option<NaiveDate>,
+
+        #[arg(short, long)]
+        tag: Option<String>,
+
+        /// Number of most recent entries to show
+        #[arg(long)]
+        limit: Option<NonZeroUsize>,
+    },
     /// Show activities from the current week
     Week,
+    /// List tags and their entry counts
+    Tags,
     /// Search for a activity
     Search {
         query: Option<String>,
@@ -47,7 +69,18 @@ enum Commands {
     /// Delete an entry
     Delete { id: String },
     /// Edit an entry
-    Edit { id: String, message: String },
+    Edit {
+        id: String,
+        message: Option<String>,
+
+        /// New date of the activity in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        date: Option<NaiveDate>,
+
+        /// Replace the entry tags
+        #[arg(short, long)]
+        tag: Vec<String>,
+    },
     /// Run wokjo task -h for more details
     Task {
         #[command(subcommand)]
@@ -82,6 +115,17 @@ enum ExportCommands {
     Entries {
         #[arg(short, long)]
         output: Option<String>,
+
+        /// First date to include in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        from: Option<NaiveDate>,
+
+        /// Last date to include in DD/MM/YYYY format
+        #[arg(long, value_parser = parse_date)]
+        to: Option<NaiveDate>,
+
+        #[arg(short, long)]
+        tag: Option<String>,
     },
     /// Export your tasks to a md file
     Tasks {
@@ -98,15 +142,26 @@ fn main() {
     let cli = Cli::parse();
 
     let result = match cli.command {
-        Commands::Add { message, tag } => commands::add(&message, tag),
+        Commands::Add { message, date, tag } => commands::add(&message, tag, date),
         Commands::Today => commands::today(),
         Commands::Yesterday => commands::yesterday(),
         Commands::Day { date } => commands::day(date),
-        Commands::List => commands::list(),
+        Commands::List {
+            from,
+            to,
+            tag,
+            limit,
+        } => commands::list(from, to, tag.as_deref(), limit.map(NonZeroUsize::get)),
         Commands::Week => commands::week(),
+        Commands::Tags => commands::tags(),
         Commands::Search { query, tag } => commands::search(query.as_deref(), tag.as_deref()),
         Commands::Delete { id } => commands::delete(&id),
-        Commands::Edit { id, message } => commands::edit(&id, &message),
+        Commands::Edit {
+            id,
+            message,
+            date,
+            tag,
+        } => commands::edit(&id, message.as_deref(), tag, date),
         Commands::Task { command } => match command {
             TaskCommands::Add { message } => commands::task_add(&message),
             TaskCommands::List => commands::task_list(),
@@ -116,7 +171,12 @@ fn main() {
             TaskCommands::Todo => commands::task_todo(),
         },
         Commands::Export { command } => match command {
-            ExportCommands::Entries { output } => commands::export_entries(output.as_deref()),
+            ExportCommands::Entries {
+                output,
+                from,
+                to,
+                tag,
+            } => commands::export_entries(output.as_deref(), from, to, tag.as_deref()),
             ExportCommands::Tasks { output } => commands::export_tasks(output.as_deref()),
         },
     };
