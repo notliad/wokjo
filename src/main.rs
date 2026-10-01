@@ -3,7 +3,7 @@ mod entry;
 mod storage;
 mod task;
 
-use chrono::NaiveDate;
+use chrono::{Datelike, Local, NaiveDate};
 use clap::{Parser, Subcommand};
 use std::num::NonZeroUsize;
 
@@ -26,7 +26,7 @@ enum Commands {
         /// Description of what you worked on
         message: String,
 
-        /// Date of the activity in DD/MM/YYYY format
+        /// Date of the activity in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         date: Option<NaiveDate>,
 
@@ -39,16 +39,17 @@ enum Commands {
     Yesterday,
     /// Show activities from that day
     Day {
+        /// Date in DD, DD/MM, or DD/MM/YYYY format
         #[arg(value_parser = parse_date)]
         date: NaiveDate,
     },
     /// List all logged activities
     List {
-        /// First date to include in DD/MM/YYYY format
+        /// First date to include in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         from: Option<NaiveDate>,
 
-        /// Last date to include in DD/MM/YYYY format
+        /// Last date to include in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         to: Option<NaiveDate>,
 
@@ -77,7 +78,7 @@ enum Commands {
         id: String,
         message: Option<String>,
 
-        /// New date of the activity in DD/MM/YYYY format
+        /// New date of the activity in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         date: Option<NaiveDate>,
 
@@ -120,11 +121,11 @@ enum ExportCommands {
         #[arg(short, long)]
         output: Option<String>,
 
-        /// First date to include in DD/MM/YYYY format
+        /// First date to include in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         from: Option<NaiveDate>,
 
-        /// Last date to include in DD/MM/YYYY format
+        /// Last date to include in DD, DD/MM, or DD/MM/YYYY format
         #[arg(long, value_parser = parse_date)]
         to: Option<NaiveDate>,
 
@@ -139,7 +140,15 @@ enum ExportCommands {
 }
 
 fn parse_date(value: &str) -> Result<NaiveDate, String> {
-    NaiveDate::parse_from_str(value, "%d/%m/%Y").map_err(|_| "Use DD/MM/YYYY format".to_string())
+    let today = Local::now().date_naive();
+    parse_date_with_defaults(value, today.year(), today.month())
+}
+
+fn parse_date_with_defaults(value: &str, year: i32, month: u32) -> Result<NaiveDate, String> {
+    NaiveDate::parse_from_str(value, "%d/%m/%Y")
+        .or_else(|_| NaiveDate::parse_from_str(&format!("{value}/{year}"), "%d/%m/%Y"))
+        .or_else(|_| NaiveDate::parse_from_str(&format!("{value}/{month}/{year}"), "%d/%m/%Y"))
+        .map_err(|_| "Use DD, DD/MM, or DD/MM/YYYY format".to_string())
 }
 
 fn main() {
@@ -187,5 +196,27 @@ fn main() {
 
     if let Err(error) = result {
         println!("Error: {}", error);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_parse_dates_with_optional_month_and_year() {
+        assert_eq!(
+            parse_date_with_defaults("15", 2026, 9).unwrap(),
+            NaiveDate::from_ymd_opt(2026, 9, 15).unwrap()
+        );
+        assert_eq!(
+            parse_date_with_defaults("30/09", 2026, 8).unwrap(),
+            NaiveDate::from_ymd_opt(2026, 9, 30).unwrap()
+        );
+        assert_eq!(
+            parse_date_with_defaults("30/09/2025", 2026, 8).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 9, 30).unwrap()
+        );
+        assert!(parse_date_with_defaults("29", 2025, 2).is_err());
     }
 }
